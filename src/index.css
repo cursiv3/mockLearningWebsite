@@ -1,0 +1,21 @@
+html {
+  max-height: 100%;
+  max-width: 100%;
+  background-color: #4c91ad;
+}
+body {
+  height: 100%;
+  width: 100%;
+}
+
+.loginBox {
+  width: 20%;
+  text-align: center;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 20px;
+  background-color: white;
+  box-shadow: 0 0 20px 2px rgba(0, 0, 0, 0.4);
+}
