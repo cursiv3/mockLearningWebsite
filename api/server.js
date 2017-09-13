@@ -12,32 +12,26 @@ const options = {
 };
 
 const pgp = require("pg-promise")(options);
-const connectionString = "postgres://localhost/smmusers";
+const connectionString =
+  "postgresql://dbadmin:cpa123@localhost:5432/smockusers";
 const db = pgp(connectionString);
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => console.log(`App listening on port ${PORT}`));
 
 app.get("/", (req, res) => {
-  res.send(console.log("api server"));
+  res.send("api server");
 });
 
-/*
-app.get("/login/submit", (req, res, next) => {
-  db
-    .many("SELECT username, pword FROM users" + "values({$username}, ${pword})")
-    .then(data => {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          payload: data,
-          message: "retrieved username/pw"
-        })
-        .catch(err => next(err));
-    });
+app.get("/login/submit", (req, res, err) => {
+  db.many("SELECT username, pword FROM users WHERE id = 1").then(data => {
+    res
+      .status(200)
+      .send(data)
+      .catch(err);
+  });
 });
-*/
+
 app.post("/signup/submit", (req, res, next) => {
   db
     .none(
