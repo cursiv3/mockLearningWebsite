@@ -4,18 +4,24 @@ import TextField from "material-ui/TextField";
 import { Link } from "react-router-dom";
 import "./style.css";
 
-class LoginPage extends Component {
+const LoginPage = (props) => {
+
   render() {
     return (
       <div>
         <div className="loginBox">
           <h1>Log In</h1>
-          <TextField floatingLabelText="user name" />
-          <TextField floatingLabelText="password" className="loginPwField" />
-          <Link to={"/login/submit"}>
-            <FlatButton label="login" className="loginBtn" onClick />
-          </Link>
-          <FlatButton label="sign up" href="/sign_up" />
+          <form onSubmit={this.handleSubmit}>
+            <label>
+              Name:
+              <input
+                type="text"
+                value={this.state.value}
+                onChange={this.handleChange}
+              />
+            </label>
+            <input type="submit" value="Submit" />
+          </form>
         </div>
       </div>
     );
