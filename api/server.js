@@ -12,6 +12,7 @@ const options = {
 };
 
 const pgp = require("pg-promise")(options);
+
 const connectionString =
   "postgresql://dbadmin:cpa123@localhost:5432/smockusers";
 const db = pgp(connectionString);
@@ -24,12 +25,12 @@ app.get("/", (req, res) => {
 });
 
 app.get("/login/submit", (req, res, err) => {
-  db.many("SELECT username, pword FROM users WHERE id = 1").then(data => {
-    res
-      .status(200)
-      .send(data)
-      .catch(err);
-  });
+  db
+    .many("SELECT username, pword FROM users WHERE id = 1")
+    .then(data => {
+      res.status(200).send(data);
+    })
+    .catch(err);
 });
 
 app.post("/signup/submit", (req, res, next) => {
