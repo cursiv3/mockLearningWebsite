@@ -2,28 +2,31 @@ import React, { Component } from "react";
 import FlatButton from "material-ui/FlatButton";
 import TextField from "material-ui/TextField";
 import "./style.css";
-const axios = require("axios");
 
-const actions = require("../../actions/actions");
+const eventHandlers = require("./eventHandlers");
 
-const LoginPage = (props) => {
+class LoginPage extends Component {
+  constructor() {
+    super();
+
+    this.state = {
+      user: "",
+      pass: ""
+    };
+  }
 
   render() {
     return (
       <div>
         <div className="loginBox">
           <h1>Log In</h1>
-          <form onSubmit={this.handleSubmit}>
-            <label>
-              Name:
-              <input
-                type="text"
-                value={this.state.value}
-                onChange={this.handleChange}
-              />
-            </label>
-            <input type="submit" value="Submit" />
-          </form>
+          <label>Username</label>
+          <input type="text" />
+          <label>Password</label>
+          <input type="text" />
+          <button onClick={eventHandlers.handleSubmit}>submit</button>
+          <h3>user: {this.state.user}</h3>
+          <h3>pass: {this.state.pass}</h3>
         </div>
       </div>
     );
