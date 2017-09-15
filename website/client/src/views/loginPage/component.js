@@ -13,15 +13,27 @@ class LoginPage extends Component {
 
     this.state = {
       user: "",
-      pass: ""
+      pass: "",
+      userIn: "",
+      userPw: ""
     };
   }
 
-  handleSubmit = () => {
+  handleSubmit() {
     axios.get("http://localhost:8000/login/submit").then(data => {
-      this.setState({ user: data.data[0].username, pass: data.data[0].pword });
+      const d = data.data;
+      if (d.username == this.state.userIn && d.pword == this.state.userPw) {
+        console.log("success!");
+      } else {
+        console.log("err");
+      }
     });
-  };
+  }
+
+  handleChange(event) {
+    const name = event.target.name;
+    this.setState({ [name]: event.target.value });
+  }
 
   render() {
     return (
@@ -29,12 +41,22 @@ class LoginPage extends Component {
         <div className="loginBox">
           <h1>Log In</h1>
           <label>Username</label>
-          <input type="text" />
+          <input
+            type="text"
+            value={this.state.value}
+            name="userIn"
+            onChange={e => this.handleChange(e)}
+          />
           <label>Password</label>
-          <input type="text" />
+          <input
+            type="text"
+            value={this.state.value}
+            name="userPw"
+            onChange={e => this.handleChange(e)}
+          />
           <button onClick={e => this.handleSubmit(e)}>submit</button>
-          <h3>user: {this.state.user}</h3>
-          <h3>pass: {this.state.pass}</h3>
+          <h3>{this.state.userIn}</h3>
+          <h3>{this.state.userPw}</h3>
         </div>
       </div>
     );
