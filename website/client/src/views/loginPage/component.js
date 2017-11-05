@@ -22,7 +22,10 @@ class LoginPage extends Component {
   handleSubmit() {
     axios.get("http://localhost:8000/login/submit").then(data => {
       const d = data.data;
-      if (d.username == this.state.userIn && d.pword == this.state.userPw) {
+      if (
+        d[0].username == this.state.userIn &&
+        d[0].pword == this.state.userPw
+      ) {
         console.log("success!");
       } else {
         console.log("err");
