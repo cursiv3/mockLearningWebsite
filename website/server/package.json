@@ -4,21 +4,20 @@
   "description": "social media mock api server",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon index.js"
   },
   "author": "Corey Lewis",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.16.2",
     "bluebird": "^3.5.0",
+    "body-parser": "^1.18.2",
     "express": "^4.15.4",
+    "morgan": "^1.9.0",
     "path": "^0.12.7",
     "pg-promise": "^6.5.1"
   },
   "devDependencies": {
     "nodemon": "^1.11.0"
-  },
-  "scripts": {
-    "start": "node index.js"
   }
 }

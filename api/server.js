@@ -1,25 +1,33 @@
 "use strict";
 
 const express = require("express");
-const path = require("path");
-
 const app = express();
-
+const bodyParser = require("body-parser");
+const morgan = require("morgan");
 const promise = require("bluebird");
+
+const jwt = require("jsonwebtoken");
+const config = require("./config");
+
+const model = require("./userModel");
 
 const options = {
   promiseLib: promise
 };
 
-const pgp = require("pg-promise")(options);
-
-const connectionString =
-  "postgresql://dbadmin:cpa123@localhost:5432/smockusers";
-const db = pgp(connectionString);
-
+// create app port
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => console.log(`App listening on port ${PORT}`));
 
+//connect to postgres db, set superSecret to jwt secret var
+const pgp = require("pg-promise")(options);
+const db = pgp(config.database);
+app.set("superSecret", config.secret);
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(morgan("dev"));
+
+//CORS allow all
 app.all("*", function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
@@ -31,16 +39,66 @@ app.get("/", (req, res) => {
   res.send("api server");
 });
 
-app.get("/login/submit", (req, res, err) => {
+// =========================== test db ===========================
+app.get("/setup", (req, res) => {
   db
-    .many("SELECT username, pword FROM users WHERE id = 1")
+    .none("INSERT INTO users(username, pword, email) VALUES($1, $2, $3)", [
+      "cursiv3",
+      "password",
+      "csl503@email.com"
+    ])
     .then(data => {
-      res.status(200).send(data);
+      console.log("User saved successfully!");
+      res.json({
+        success: true,
+        message: "user submitted"
+      });
     })
-    .catch(err);
+    .catch(error => {
+      console.log("failed, error: " + error);
+      res.json({ success: false, err: error });
+    });
+});
+// =========================== test db ===========================
+
+app.post("/login/submit", (req, res) => {
+  db
+    .any("SELECT * FROM users WHERE username = $1 AND pword = $2", [
+      req.body.username,
+      req.body.password
+    ])
+    .then(data => {
+      if (!data) {
+        res.json({
+          success: false,
+          message: "User not found."
+        });
+      } else {
+        var usr = data[0].username;
+        var pw = data[0].pword;
+        if (pw != req.body.password || usr != req.body.username) {
+          res.json({
+            success: false,
+            message: "Username/password incorrect."
+          });
+        } else {
+          const payload = { user: usr };
+          var token = jwt.sign(payload, app.get("superSecret"), {
+            expiresIn: 60 * 60 * 24
+          });
+          console.log("Successfull created token!");
+          res.json({ success: true, message: "Token created", token: token });
+        }
+      }
+    })
+    .catch(error => {
+      console.log("failed, error: " + error);
+      res.json({ success: false, err: error });
+    });
 });
 
 app.post("/signup/submit", (req, res, next) => {
+  console.log(req.body);
   db
     .none(
       "insert into users(username, pword, email)" +
@@ -55,5 +113,8 @@ app.post("/signup/submit", (req, res, next) => {
     })
     .catch(err => next(err));
 });
+
+// start the server
+app.listen(PORT, () => console.log(`App listening on port ${PORT}`));
 
 module.exports = app;
