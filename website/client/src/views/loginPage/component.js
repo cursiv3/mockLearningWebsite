@@ -12,25 +12,9 @@ class LoginPage extends Component {
     super();
 
     this.state = {
-      user: "",
-      pass: "",
       userIn: "",
       userPw: ""
     };
-  }
-
-  handleSubmit() {
-    axios.get("http://localhost:8000/login/submit").then(data => {
-      const d = data.data;
-      if (
-        d[0].username == this.state.userIn &&
-        d[0].pword == this.state.userPw
-      ) {
-        console.log("success!");
-      } else {
-        console.log("err");
-      }
-    });
   }
 
   handleChange(event) {
@@ -38,28 +22,32 @@ class LoginPage extends Component {
     this.setState({ [name]: event.target.value });
   }
 
+  onSubmit(event) {}
+
   render() {
     return (
       <div>
         <div className="loginBox">
-          <h1>Log In</h1>
-          <label>Username</label>
-          <input
-            type="text"
-            value={this.state.value}
-            name="userIn"
-            onChange={e => this.handleChange(e)}
-          />
-          <label>Password</label>
-          <input
-            type="text"
-            value={this.state.value}
-            name="userPw"
-            onChange={e => this.handleChange(e)}
-          />
-          <button onClick={e => this.handleSubmit(e)}>submit</button>
-          <h3>{this.state.userIn}</h3>
-          <h3>{this.state.userPw}</h3>
+          <form onSubmit="http://localhost:8000/login/submit">
+            <h1>Log In</h1>
+            <label>Username</label>
+            <input
+              type="text"
+              value={this.state.value}
+              name="username"
+              onChange={e => this.handleChange(e)}
+            />
+            <label>Password</label>
+            <input
+              type="text"
+              value={this.state.value}
+              name="password"
+              onChange={e => this.handleChange(e)}
+            />
+            <input type="submit" value="submit" />
+            <h3>{this.state.userIn}</h3>
+            <h3>{this.state.userPw}</h3>
+          </form>
         </div>
       </div>
     );
