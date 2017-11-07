@@ -61,42 +61,6 @@ app.get("/setup", (req, res) => {
 });
 // =========================== test db ===========================
 
-app.post("/login/submit", (req, res) => {
-  db
-    .any("SELECT * FROM users WHERE username = $1 AND pword = $2", [
-      req.body.username,
-      req.body.password
-    ])
-    .then(data => {
-      if (!data) {
-        res.json({
-          success: false,
-          message: "User not found."
-        });
-      } else {
-        var usr = data[0].username;
-        var pw = data[0].pword;
-        if (pw != req.body.password || usr != req.body.username) {
-          res.json({
-            success: false,
-            message: "Username/password incorrect."
-          });
-        } else {
-          const payload = { user: usr };
-          var token = jwt.sign(payload, app.get("superSecret"), {
-            expiresIn: 60 * 60 * 24
-          });
-          console.log("Successfull created token!");
-          res.json({ success: true, message: "Token created", token: token });
-        }
-      }
-    })
-    .catch(error => {
-      console.log("failed, error: " + error);
-      res.json({ success: false, err: error });
-    });
-});
-
 app.post("/signup/submit", (req, res, next) => {
   console.log(req.body);
   db
@@ -112,6 +76,65 @@ app.post("/signup/submit", (req, res, next) => {
       });
     })
     .catch(err => next(err));
+});
+
+// route to authenticate & assign token
+app.post("/login/submit", (req, res) => {
+  db
+    .any("SELECT * FROM users WHERE username = $1 OR pword = $2", [
+      req.body.username,
+      req.body.password
+    ])
+    .then(user => {
+      if (user.length < 1) {
+        res.json({
+          success: false,
+          message: "User does not exist."
+        });
+      } else {
+        var usr = user[0].username;
+        var pw = user[0].pword;
+        if (pw != req.body.password || usr != req.body.username) {
+          res.json({
+            success: false,
+            message: "Username or password incorrect."
+          });
+        } else {
+          const payload = { user: usr };
+          var token = jwt.sign(payload, app.get("superSecret"), {
+            expiresIn: 60 * 60 * 24
+          });
+          console.log("Successfully created token!");
+          res.json({ success: true, message: "Token created", token: token });
+        }
+      }
+    })
+    .catch(error => {
+      console.log("CATCH ERROR: " + error);
+      res.json({ success: false, err: error });
+    });
+});
+
+//middleware route to verify token
+
+app.use((req, res, next) => {
+  const token =
+    req.body.token || req.query.token || req.headers["x-access-token"];
+
+  if (token) {
+    jwt.verify(token, app.get("superSecret"), (err, decoded) => {
+      if (err) {
+        return res.json({ success: false, message: "Authentication failed." });
+      } else {
+        req.decoded = decoded;
+        next();
+      }
+    });
+  } else {
+    return res
+      .status(403)
+      .send({ success: false, message: "No authentication provided." });
+  }
 });
 
 // start the server
