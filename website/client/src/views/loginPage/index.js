@@ -37,6 +37,7 @@ class LoginPage extends Component {
       this.setState({
         errors: {}
       });
+
       var params = new URLSearchParams();
       params.append("username", this.state.user.username);
       params.append("password", this.state.user.password);
@@ -49,7 +50,7 @@ class LoginPage extends Component {
               errors: { message: res.data.message }
             });
           } else {
-            console.log("yay it works");
+            localStorage.token = res.data.token;
           }
         })
         .catch(err => {
