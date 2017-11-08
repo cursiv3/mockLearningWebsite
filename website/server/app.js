@@ -1,18 +1,13 @@
 const express = require("express");
-const morgan = require("morgan");
 const app = express();
+
+const morgan = require("morgan");
 const bodyParser = require("body-parser");
-const validator = require("validator");
-const router = new express.Router();
-const authRoutes = require("./server/routes/auth");
 
 app.use(express.static("../client/build"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(morgan("dev"));
-
-//app.use(middleware to check for token here)
-app.use("/auth", authRoutes);
 
 app.all("*", function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -21,4 +16,5 @@ app.all("*", function(req, res, next) {
   next();
 });
 
-module.exports = app;
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`App listening on port ${PORT}`));

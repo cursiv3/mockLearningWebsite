@@ -4,7 +4,7 @@
   "description": "social media mock api server",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon app.js"
   },
   "author": "Corey Lewis",
   "license": "ISC",
