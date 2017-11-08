@@ -59,24 +59,7 @@ app.get("/setup", (req, res) => {
       res.json({ success: false, err: error });
     });
 });
-// =========================== test db ===========================
-
-app.post("/signup/submit", (req, res, next) => {
-  console.log(req.body);
-  db
-    .none(
-      "insert into users(username, pword, email)" +
-        "values(${username}, ${pword}, ${email})",
-      req.body
-    )
-    .then(function() {
-      res.status(200).json({
-        status: "success",
-        message: "Inserted new user"
-      });
-    })
-    .catch(err => next(err));
-});
+// ======================================================
 
 // route to authenticate & assign token
 app.post("/login/submit", (req, res) => {
@@ -128,7 +111,7 @@ app.use((req, res, next) => {
         return res.json({ success: false, message: "Authentication failed." });
       } else {
         req.decoded = decoded;
-        next();
+        res.json({ success: true });
       }
     });
   } else {
@@ -136,6 +119,10 @@ app.use((req, res, next) => {
       .status(403)
       .send({ success: false, message: "No authentication provided." });
   }
+});
+
+app.get("/auth", (req, res) => {
+  res.send("it protected route!");
 });
 
 // start the server
