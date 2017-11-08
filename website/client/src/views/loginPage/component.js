@@ -10,6 +10,8 @@ const LoginForm = ({ history, onSubmit, onChange, errors, user, pw }) => {
         <form onSubmit={onSubmit}>
           <h1>Log In</h1>
 
+          {errors.message && <p style={{ color: "red" }}>{errors.message}</p>}
+
           <label>Username</label>
           <TextField
             floatingLabelText="Username"

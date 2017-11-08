@@ -80,6 +80,7 @@ app.post("/signup/submit", (req, res, next) => {
 
 // route to authenticate & assign token
 app.post("/login/submit", (req, res) => {
+  console.log("test");
   db
     .any("SELECT * FROM users WHERE username = $1 OR pword = $2", [
       req.body.username,

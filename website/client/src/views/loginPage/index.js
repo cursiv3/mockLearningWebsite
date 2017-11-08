@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import LoginForm from "./component.js";
+const axios = require("axios");
 const FormValidators = require("../../validate.js");
 const validateLoginForm = FormValidators.validateLoginForm;
 
@@ -36,7 +37,24 @@ class LoginPage extends Component {
       this.setState({
         errors: {}
       });
-      console.log("The form is valid");
+      var params = new URLSearchParams();
+      params.append("username", this.state.user.username);
+      params.append("password", this.state.user.password);
+
+      axios
+        .post("http://localhost:8000/login/submit", params)
+        .then(res => {
+          if (!res.data.success) {
+            this.setState({
+              errors: { message: res.data.message }
+            });
+          } else {
+            console.log("yay it works");
+          }
+        })
+        .catch(err => {
+          console.log("error is: ", err);
+        });
     } else {
       const errors = payload.errors;
       this.setState({
