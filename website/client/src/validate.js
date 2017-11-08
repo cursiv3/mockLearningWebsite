@@ -1,9 +1,18 @@
 const validator = require("validator");
 
-const validateSignupForm = payload => {
+const validateSignUpForm = payload => {
   const errors = {};
   let message = "";
   let isFormValid = true;
+
+  if (
+    !payload ||
+    typeof payload.username !== "string" ||
+    payload.username.trim().length === 0
+  ) {
+    isFormValid = false;
+    errors.username = "Please provide a user name.";
+  }
 
   if (
     !payload ||
@@ -23,13 +32,9 @@ const validateSignupForm = payload => {
     errors.password = "Password must have at least 8 characters.";
   }
 
-  if (
-    !payload ||
-    typeof payload.name !== "string" ||
-    payload.name.trim().length === 0
-  ) {
+  if (!payload || payload.pwconfirm !== payload.password) {
     isFormValid = false;
-    errors.name = "Please provide your name.";
+    errors.pwconfirm = "Password confirmation doesn't match.";
   }
 
   if (!isFormValid) {
@@ -37,7 +42,7 @@ const validateSignupForm = payload => {
   }
 
   return {
-    success: true,
+    success: isFormValid,
     message,
     errors
   };
@@ -79,5 +84,5 @@ const validateLoginForm = payload => {
 
 module.exports = {
   validateLoginForm: validateLoginForm,
-  validateSignupForm: validateSignupForm
+  validateSignUpForm: validateSignUpForm
 };

@@ -9,8 +9,10 @@ class LoginPage extends Component {
 
     this.state = {
       errors: {},
-      username: "",
-      password: ""
+      user: {
+        username: "",
+        password: ""
+      }
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -18,18 +20,18 @@ class LoginPage extends Component {
   }
 
   handleChange(event) {
-    const name = event.target.name;
+    const field = event.target.name;
+    const user = this.state.user;
+    user[field] = event.target.value;
+
     this.setState({
-      [name]: event.target.value
+      user
     });
   }
 
   validateForm(event) {
     event.preventDefault();
-    var payload = validateLoginForm({
-      username: this.state.username,
-      password: this.state.password
-    });
+    var payload = validateLoginForm(this.state.user);
     if (payload.success) {
       this.setState({
         errors: {}
@@ -49,8 +51,7 @@ class LoginPage extends Component {
         onSubmit={this.validateForm}
         onChange={this.handleChange}
         errors={this.state.errors}
-        user={this.state.username}
-        pw={this.state.password}
+        user={this.state.user}
       />
     );
   }

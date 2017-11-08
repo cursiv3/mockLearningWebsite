@@ -13,7 +13,7 @@ const LoginForm = ({ history, onSubmit, onChange, errors, user, pw }) => {
           <label>Username</label>
           <TextField
             floatingLabelText="Username"
-            value={user}
+            value={user.username}
             name="username"
             onChange={onChange}
             errorText={errors.username}
@@ -21,7 +21,7 @@ const LoginForm = ({ history, onSubmit, onChange, errors, user, pw }) => {
           <label>Password</label>
           <TextField
             floatingLabelText="Password"
-            value={pw}
+            value={user.password}
             name="password"
             onChange={onChange}
             errorText={errors.password}

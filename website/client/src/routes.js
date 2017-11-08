@@ -8,7 +8,7 @@ import HomePage from "./views/homePage";
 const Routes = () => (
   <Switch>
     <Route exact path="/" component={LoginPage} />
-    <Route path="/sign_up" component={SignUpPage} />
+    <Route path="/signup" component={SignUpPage} />
 
     {/*<Route component={authCheck}>
       <Route path="protected route" component={compHere} />

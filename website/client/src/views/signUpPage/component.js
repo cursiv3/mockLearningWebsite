@@ -1,58 +1,45 @@
-import React, { Component } from "react";
+import React from "react";
 import FlatButton from "material-ui/FlatButton";
 import TextField from "material-ui/TextField";
-import { Link } from "react-router-dom";
 import "./style.css";
 
-class SignUpPage extends Component {
-  constructor() {
-    super();
+const SignUpForm = ({ history, onSubmit, onChange, errors, user }) => {
+  return (
+    <div className="loginBox">
+      <h1>Sign Up</h1>
+      <form onSubmit={onSubmit}>
+        <TextField
+          name="username"
+          floatingLabelText="user name"
+          value={user.username}
+          onChange={onChange}
+          errorText={errors.username}
+        />
+        <TextField
+          name="email"
+          floatingLabelText="email"
+          value={user.email}
+          onChange={onChange}
+          errorText={errors.email}
+        />
+        <TextField
+          name="password"
+          floatingLabelText="password"
+          value={user.password}
+          onChange={onChange}
+          errorText={errors.password}
+        />
+        <TextField
+          name="pwconfirm"
+          floatingLabelText="confirm password"
+          value={user.pwconfirm}
+          onChange={onChange}
+          errorText={errors.pwconfirm}
+        />
+        <FlatButton type="submit" label="submit" />
+      </form>
+    </div>
+  );
+};
 
-    this.state = {
-      username: "",
-      pword: "",
-      email: ""
-    };
-
-    //this.handleSubmit = this.handleSubmit.bind(this);
-    //this.onSubmit = this.onSubmit.bind(this);
-    //this.handleChange = this.handleChange.bind(this);
-  }
-
-  render() {
-    return (
-      <div className="loginBox">
-        <h1>Sign Up</h1>
-        <form action="localhost:8000/signup/submit" method="post">
-          <TextField
-            name="username"
-            type="text"
-            floatingLabelText="user name"
-            onChange={this.handleChange}
-          />
-          <TextField
-            name="pword"
-            type="text"
-            floatingLabelText="password"
-            onChange={this.handleChange}
-          />
-          <TextField
-            name="pwconfirm"
-            type="text"
-            floatingLabelText="confirm password"
-            onChange={this.handleChange}
-          />
-          <TextField
-            name="email"
-            type="text"
-            floatingLabelText="email"
-            onChange={this.handleChange}
-          />
-          <FlatButton type="submit" label="submit" className="signUpSubmit" />
-        </form>
-      </div>
-    );
-  }
-}
-
-export default SignUpPage;
+export default SignUpForm;
