@@ -1,29 +1,30 @@
-import React from "react";
-import LoginPage from "./views/loginPage";
-
 const axios = require("axios");
 
-class AuthCheck extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
-  componentWillMount() {
+const authCheck = {
+  isAuthenticated: false,
+  authenticate() {
     var params = new URLSearchParams();
     params.append("token", localStorage.token);
-    axios.post("http://localhost:8000/auth", params).then(res => {
-      localStorage.authorized = res.data.success;
-      console.log("comp will mount done, ls.auth = ", localStorage.authorized);
-    });
-  }
-
-  render() {
-    if (localStorage.authorized == true) {
-      return <div>{this.props.children}</div>;
+    if (
+      axios.post("http://localhost:8000/auth", params).then(res => {
+        if (res.data.success) {
+          return true;
+        } else {
+          return false;
+        }
+      })
+    ) {
+      this.isAuthenticated = true;
+      return true;
     } else {
-      return <LoginPage />;
+      return false;
     }
-  }
-}
+  },
 
-export default AuthCheck;
+  signout(callback) {
+    this.isAuthenticated = false;
+    localStorage.token = null;
+  }
+};
+
+module.exports = authCheck;

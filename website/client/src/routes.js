@@ -4,25 +4,42 @@ import { Switch, Route, Redirect } from "react-router-dom";
 import LoginPage from "./views/loginPage/";
 import SignUpPage from "./views/signUpPage";
 import HomePage from "./views/homePage";
-import AuthCheck from "./authCheck";
+const authCheck = require("./authCheck");
+
+var testerino = authCheck.authenticate();
+console.log(testerino);
+console.log(authCheck.isAuthenticated);
+
+const PrivateRoute = ({ component: Component, ...rest }) => (
+  <Route
+    {...rest}
+    render={props =>
+      authCheck.isAuthenticated ? (
+        <Component {...props} />
+      ) : (
+        <Redirect to={"/"} />
+      )}
+  />
+);
+
+const LoggedInRedirect = ({ component: Component, ...rest }) => (
+  <Route
+    {...rest}
+    render={props =>
+      authCheck.isAuthenticated ? (
+        <Redirect to={"/home"} />
+      ) : (
+        <Component {...props} />
+      )}
+  />
+);
 
 const Routes = () => (
   <Switch>
-    <Route
-      exact
-      path="/"
-      render={() =>
-        localStorage.authorized == true ? (
-          <Redirect to="/home" />
-        ) : (
-          <LoginPage />
-        )}
-    />
+    <LoggedInRedirect exact path="/" component={LoginPage} />
     <Route path="/signup" component={SignUpPage} />
 
-    <Route component={AuthCheck}>
-      <Route path="/home" component={HomePage} />
-    </Route>
+    <PrivateRoute path="/home" component={HomePage} />
   </Switch>
 );
 

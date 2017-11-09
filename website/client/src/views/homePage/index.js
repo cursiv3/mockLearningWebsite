@@ -1,3 +1,3 @@
-import component from "./component.js";
+import HomePage from "./component.js";
 
-export default component;
+export default HomePage;

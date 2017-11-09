@@ -18,6 +18,7 @@ class LoginPage extends Component {
 
     this.handleChange = this.handleChange.bind(this);
     this.validateForm = this.validateForm.bind(this);
+    this.submitData = this.submitData.bind(this);
   }
 
   handleChange(event) {
@@ -30,6 +31,27 @@ class LoginPage extends Component {
     });
   }
 
+  submitData() {
+    var params = new URLSearchParams();
+    params.append("username", this.state.user.username);
+    params.append("password", this.state.user.password);
+
+    axios
+      .post("http://localhost:8000/login/submit", params)
+      .then(res => {
+        if (!res.data.success) {
+          this.setState({
+            errors: { message: res.data.message }
+          });
+        } else {
+          localStorage.token = res.data.token;
+        }
+      })
+      .catch(err => {
+        console.log("error is: ", err);
+      });
+  }
+
   validateForm(event) {
     event.preventDefault();
     var payload = validateLoginForm(this.state.user);
@@ -37,25 +59,7 @@ class LoginPage extends Component {
       this.setState({
         errors: {}
       });
-
-      var params = new URLSearchParams();
-      params.append("username", this.state.user.username);
-      params.append("password", this.state.user.password);
-
-      axios
-        .post("http://localhost:8000/login/submit", params)
-        .then(res => {
-          if (!res.data.success) {
-            this.setState({
-              errors: { message: res.data.message }
-            });
-          } else {
-            localStorage.token = res.data.token;
-          }
-        })
-        .catch(err => {
-          console.log("error is: ", err);
-        });
+      this.submitData();
     } else {
       const errors = payload.errors;
       this.setState({

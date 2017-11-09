@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import FlatButton from "material-ui/FlatButton";
 import TextField from "material-ui/TextField";
 import "./style.css";
@@ -12,7 +13,6 @@ const LoginForm = ({ history, onSubmit, onChange, errors, user, pw }) => {
 
           {errors.message && <p style={{ color: "red" }}>{errors.message}</p>}
 
-          <label>Username</label>
           <TextField
             floatingLabelText="Username"
             value={user.username}
@@ -20,7 +20,6 @@ const LoginForm = ({ history, onSubmit, onChange, errors, user, pw }) => {
             onChange={onChange}
             errorText={errors.username}
           />
-          <label>Password</label>
           <TextField
             floatingLabelText="Password"
             value={user.password}
@@ -28,7 +27,9 @@ const LoginForm = ({ history, onSubmit, onChange, errors, user, pw }) => {
             onChange={onChange}
             errorText={errors.password}
           />
-          <FlatButton type="submit" label="submit" />
+          <FlatButton type="submit" label="submit">
+            <Link to="/home" />
+          </FlatButton>
         </form>
       </div>
     </div>
