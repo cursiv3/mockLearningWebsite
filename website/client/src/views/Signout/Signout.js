@@ -1,10 +1,10 @@
 import React from "react";
 import { withRouter, Link } from "react-router-dom";
-const authCheck = require("../../authCheck.js");
+const authCheck = require("../../helperFunctions/authCheck");
 
 const Signout = withRouter(
   ({ history }) =>
-    authCheck.isAuthenticated ? (
+    localStorage.isAuthenticated == "true" ? (
       <p>
         Welcome!{" "}
         <Link

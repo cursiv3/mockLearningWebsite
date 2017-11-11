@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import SignUpForm from "./component.js";
-const FormValidators = require("../../validate.js");
+const FormValidators = require("../../helperFunctions/validate");
 const validateSignUpForm = FormValidators.validateSignUpForm;
 
 class SignUpContainer extends Component {

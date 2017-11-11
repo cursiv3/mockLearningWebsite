@@ -1,14 +1,13 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import FlatButton from "material-ui/FlatButton";
 import TextField from "material-ui/TextField";
 import "./style.css";
 
-const LoginForm = ({ history, onSubmit, onChange, errors, user, pw }) => {
+const LoginForm = ({ history, onClick, onChange, errors, user, pw }) => {
   return (
     <div>
       <div className="loginBox">
-        <form onSubmit={onSubmit}>
+        <form>
           <h1>Log In</h1>
 
           {errors.message && <p style={{ color: "red" }}>{errors.message}</p>}
@@ -27,9 +26,7 @@ const LoginForm = ({ history, onSubmit, onChange, errors, user, pw }) => {
             onChange={onChange}
             errorText={errors.password}
           />
-          <FlatButton type="submit" label="submit">
-            <Link to="/home" />
-          </FlatButton>
+          <FlatButton label="Submit" onClick={onClick} />
         </form>
       </div>
     </div>

@@ -1,8 +1,10 @@
 import React, { Component } from "react";
 import LoginForm from "./component.js";
+import { submitData } from "../../helperFunctions/submitData";
 const axios = require("axios");
-const FormValidators = require("../../validate.js");
+const FormValidators = require("../../helperFunctions/validate");
 const validateLoginForm = FormValidators.validateLoginForm;
+const authCheck = require("../../helperFunctions/authCheck");
 
 class LoginPage extends Component {
   constructor(props) {
@@ -18,7 +20,6 @@ class LoginPage extends Component {
 
     this.handleChange = this.handleChange.bind(this);
     this.validateForm = this.validateForm.bind(this);
-    this.submitData = this.submitData.bind(this);
   }
 
   handleChange(event) {
@@ -31,27 +32,6 @@ class LoginPage extends Component {
     });
   }
 
-  submitData() {
-    var params = new URLSearchParams();
-    params.append("username", this.state.user.username);
-    params.append("password", this.state.user.password);
-
-    axios
-      .post("http://localhost:8000/login/submit", params)
-      .then(res => {
-        if (!res.data.success) {
-          this.setState({
-            errors: { message: res.data.message }
-          });
-        } else {
-          localStorage.token = res.data.token;
-        }
-      })
-      .catch(err => {
-        console.log("error is: ", err);
-      });
-  }
-
   validateForm(event) {
     event.preventDefault();
     var payload = validateLoginForm(this.state.user);
@@ -59,7 +39,8 @@ class LoginPage extends Component {
       this.setState({
         errors: {}
       });
-      this.submitData();
+      // Validate form, upon successful validation run the API call
+      submitData(this.state.user.username, this.state.user.password);
     } else {
       const errors = payload.errors;
       this.setState({
@@ -71,7 +52,7 @@ class LoginPage extends Component {
   render() {
     return (
       <LoginForm
-        onSubmit={this.validateForm}
+        onClick={this.validateForm}
         onChange={this.handleChange}
         errors={this.state.errors}
         user={this.state.user}

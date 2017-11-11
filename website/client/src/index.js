@@ -5,7 +5,6 @@ import { BrowserRouter } from "react-router-dom";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import "./index.css";
 import Routes from "./routes";
-import { authCheck } from "./authCheck";
 
 ReactDOM.render(
   <BrowserRouter>
