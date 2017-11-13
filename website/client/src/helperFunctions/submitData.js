@@ -11,15 +11,9 @@ export const submitData = (usr, pw) => {
   axios
     .post("http://localhost:8000/login/submit", params)
     .then(res => {
-      if (!res.data.success) {
-        this.setState({
-          errors: { message: res.data.message }
-        });
-      } else {
-        localStorage.token = res.data.token;
-        localStorage.isAuthenticated = true;
-        window.location.reload();
-      }
+      localStorage.token = res.data.token;
+      localStorage.isAuthenticated = true;
+      window.location.reload();
     })
     .catch(err => {
       console.log("error is: ", err);
