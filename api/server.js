@@ -31,8 +31,27 @@ app.use(morgan("dev"));
 app.all("*", function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  next();
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, Content-Length, X-Requested-With"
+  );
+  if ("OPTIONS" === req.method) {
+    //respond with 200
+    res.sendStatus(200);
+  } else {
+    //move on
+    next();
+  }
+});
+
+app.options("/*", function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, Content-Length, X-Requested-With"
+  );
+  res.send(200);
 });
 
 app.get("/", (req, res) => {
@@ -63,6 +82,7 @@ app.get("/setup", (req, res) => {
 
 // route to authenticate & assign token
 app.post("/login/submit", (req, res) => {
+  console.log(req.body);
   db
     .any("SELECT * FROM users WHERE username = $1 OR pword = $2", [
       req.body.username,
@@ -70,6 +90,7 @@ app.post("/login/submit", (req, res) => {
     ])
     .then(user => {
       if (user.length < 1) {
+        console.log("fail");
         res.json({
           success: false,
           message: "User does not exist."
@@ -101,8 +122,9 @@ app.post("/login/submit", (req, res) => {
 //middleware route to verify token
 
 app.use((req, res, next) => {
+  console.log(req.headers.authorization);
   const token =
-    req.body.token || req.query.token || req.headers["x-access-token"];
+    req.body.token || req.query.token || req.headers["authorization"];
 
   if (token) {
     jwt.verify(token, app.get("superSecret"), (err, decoded) => {
@@ -114,9 +136,7 @@ app.use((req, res, next) => {
       }
     });
   } else {
-    return res
-      .status(403)
-      .send({ success: false, message: "No authentication provided." });
+    return res.json({ success: false, message: "No authentication provided." });
   }
 });
 

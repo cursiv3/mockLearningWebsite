@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import LoginForm from "./component.js";
-import { submitData } from "../../helperFunctions/submitData";
 const axios = require("axios");
 const FormValidators = require("../../helperFunctions/validate");
 const validateLoginForm = FormValidators.validateLoginForm;
@@ -19,6 +18,7 @@ class LoginPage extends Component {
     };
 
     this.handleChange = this.handleChange.bind(this);
+    this.submitData = this.submitData.bind(this);
     this.validateForm = this.validateForm.bind(this);
   }
 
@@ -32,6 +32,29 @@ class LoginPage extends Component {
     });
   }
 
+  submitData = (usr, pw) => {
+    var params = new URLSearchParams();
+    params.append("username", usr);
+    params.append("password", pw);
+
+    axios
+      .post("http://localhost:8000/login/submit", params)
+      .then(res => {
+        if (res.data.success == true) {
+          localStorage.token = res.data.token;
+          localStorage.isAuthenticated = true;
+          window.location.reload();
+        } else {
+          this.setState({
+            errors: { message: res.data.message }
+          });
+        }
+      })
+      .catch(err => {
+        console.log("error is: ", err);
+      });
+  };
+
   validateForm(event) {
     event.preventDefault();
     var payload = validateLoginForm(this.state.user);
@@ -40,7 +63,7 @@ class LoginPage extends Component {
         errors: {}
       });
       // Validate form, upon successful validation run the API call
-      submitData(this.state.user.username, this.state.user.password);
+      this.submitData(this.state.user.username, this.state.user.password);
     } else {
       const errors = payload.errors;
       this.setState({
