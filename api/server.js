@@ -5,6 +5,10 @@ const app = express();
 const bodyParser = require("body-parser");
 const morgan = require("morgan");
 const promise = require("bluebird");
+const bcrypt = require("bcrypt");
+const http = require("http");
+const https = require("https");
+const fs = require("fs");
 
 const jwt = require("jsonwebtoken");
 const config = require("./config");
@@ -15,14 +19,10 @@ const options = {
   promiseLib: promise
 };
 
-// create app port
-const PORT = process.env.PORT || 8000;
-
 //connect to postgres db, set superSecret to jwt secret var
 const pgp = require("pg-promise")(options);
 const db = pgp(config.database);
 app.set("superSecret", config.secret);
-
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(morgan("dev"));
@@ -54,17 +54,22 @@ app.options("/*", function(req, res, next) {
   res.send(200);
 });
 
+var credentials = {
+  key: fs.readFileSync("./key.pem"),
+  cert: fs.readFileSync("./cert.pem")
+};
+
 app.get("/", (req, res) => {
   res.send("api server");
 });
 
 // =========================== test db ===========================
-app.get("/setup", (req, res) => {
+app.post("/signup/submit", (req, res) => {
   db
     .none("INSERT INTO users(username, pword, email) VALUES($1, $2, $3)", [
-      "cursiv3",
-      "password",
-      "csl503@email.com"
+      req.body.username,
+      req.body.password,
+      req.body.email
     ])
     .then(data => {
       console.log("User saved successfully!");
@@ -82,7 +87,6 @@ app.get("/setup", (req, res) => {
 
 // route to authenticate & assign token
 app.post("/login/submit", (req, res) => {
-  console.log(req.body);
   db
     .any("SELECT * FROM users WHERE username = $1 OR pword = $2", [
       req.body.username,
@@ -144,7 +148,10 @@ app.get("/auth", (req, res) => {
   res.send("it protected route!");
 });
 
-// start the server
-app.listen(PORT, () => console.log(`App listening on port ${PORT}`));
+const port = process.env.PORT || 8000;
+
+const server = https.createServer(credentials, app).listen(port, () => {
+  console.log("server running at " + port);
+});
 
 module.exports = app;
