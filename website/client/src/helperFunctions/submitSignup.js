@@ -1,10 +1,10 @@
 const axios = require("axios");
 
-export const submitData = (usr, pw) => {
-  var params = { username: usr, password: pw };
+export const submitSignup = user => {
+  var params = { username: user.usr, password: user.pw, email: user.email };
   console.log(params);
   axios
-    .post("https://localhost:8000/login/submit", params)
+    .post("https://localhost:8000/signup/submit", params)
     .then(res => {
       if (res.data.success == true) {
         localStorage.token = res.data.token;
@@ -17,6 +17,6 @@ export const submitData = (usr, pw) => {
       }
     })
     .catch(err => {
-      console.log("Data submit error: ", err);
+      console.log("Sign up data submit error: ", err);
     });
 };

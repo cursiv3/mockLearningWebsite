@@ -1,12 +1,16 @@
 import React from "react";
 import FlatButton from "material-ui/FlatButton";
 import TextField from "material-ui/TextField";
+import { Link } from "react-router-dom";
 import "./style.css";
 
 const SignUpForm = ({ history, onSubmit, onChange, errors, user }) => {
   return (
     <div className="loginBox">
       <h1>Sign Up</h1>
+
+      {errors.message && <p style={{ color: "red" }}>{errors.message}</p>}
+
       <form onSubmit={onSubmit}>
         <TextField
           name="username"
@@ -38,6 +42,10 @@ const SignUpForm = ({ history, onSubmit, onChange, errors, user }) => {
         />
         <FlatButton type="submit" label="submit" />
       </form>
+      <p>
+        Aleady have an account? <br />
+        <Link to="/login">Log in here</Link>
+      </p>
     </div>
   );
 };

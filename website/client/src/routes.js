@@ -13,7 +13,7 @@ const PrivateRoute = ({ component: Component, ...rest }) => (
       localStorage.isAuthenticated == "true" ? (
         <Component {...props} />
       ) : (
-        <Redirect to={"/"} />
+        <Redirect to={"/login"} />
       )}
   />
 );
@@ -32,9 +32,8 @@ const LoggedInRedirectRoute = ({ component: Component, ...rest }) => (
 
 const Routes = () => (
   <Switch>
-    <LoggedInRedirectRoute exact path="/" component={LoginPage} />
-    <Route path="/signup" component={SignUpPage} />
-
+    <LoggedInRedirectRoute exact path="/" component={SignUpPage} />
+    <LoggedInRedirectRoute path="/login" component={LoginPage} />
     <PrivateRoute path="/home" component={HomePage} />
   </Switch>
 );

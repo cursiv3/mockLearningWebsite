@@ -4,7 +4,7 @@ const axios = require("axios");
 const FormValidators = require("../../helperFunctions/validate");
 const validateLoginForm = FormValidators.validateLoginForm;
 const authCheck = require("../../helperFunctions/authCheck");
-import { submitData } from "../../helperFunctions/submitData";
+import { submitLogin } from "../../helperFunctions/submitLogin";
 
 class LoginPage extends Component {
   constructor(props) {
@@ -40,7 +40,7 @@ class LoginPage extends Component {
         errors: {}
       });
       // Validate form, upon successful validation run the API call
-      submitData(this.state.user.username, this.state.user.password);
+      submitLogin(this.state.user.username, this.state.user.password);
     } else {
       const errors = payload.errors;
       this.setState({

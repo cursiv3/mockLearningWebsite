@@ -1,6 +1,7 @@
 import React from "react";
 import FlatButton from "material-ui/FlatButton";
 import TextField from "material-ui/TextField";
+import { Link } from "react-router-dom";
 import "./style.css";
 
 const LoginForm = ({ history, onClick, onChange, errors, user, pw }) => {
@@ -28,6 +29,9 @@ const LoginForm = ({ history, onClick, onChange, errors, user, pw }) => {
           />
           <FlatButton label="Submit" onClick={onClick} />
         </form>
+        <p>
+          Don't have an account? <br /> <Link to="/">Sign up here</Link>
+        </p>
       </div>
     </div>
   );

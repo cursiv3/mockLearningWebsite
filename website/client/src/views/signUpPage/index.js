@@ -1,9 +1,10 @@
 import React, { Component } from "react";
 import SignUpForm from "./component.js";
+import { submitSignup } from "../../helperFunctions/submitSignup";
 const FormValidators = require("../../helperFunctions/validate");
 const validateSignUpForm = FormValidators.validateSignUpForm;
 
-class SignUpContainer extends Component {
+class SignUpPage extends Component {
   constructor(props) {
     super(props);
 
@@ -38,7 +39,12 @@ class SignUpContainer extends Component {
       this.setState({
         errors: {}
       });
-      console.log("The form is valid");
+      var user = {
+        usr: this.state.user.username,
+        pw: this.state.user.password,
+        email: this.state.user.email
+      };
+      submitSignup(user);
     } else {
       const errors = payload.errors;
       this.setState({
@@ -59,4 +65,4 @@ class SignUpContainer extends Component {
   }
 }
 
-export default SignUpContainer;
+export default SignUpPage;

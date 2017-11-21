@@ -9,25 +9,28 @@ const bcrypt = require("bcrypt");
 const http = require("http");
 const https = require("https");
 const fs = require("fs");
-
 const jwt = require("jsonwebtoken");
 const config = require("./config");
 
-const model = require("./userModel");
-
+// ============== postgres DB items ===================================
 const options = {
   promiseLib: promise
 };
-
-//connect to postgres db, set superSecret to jwt secret var
 const pgp = require("pg-promise")(options);
 const db = pgp(config.database);
+
+// ====================================================================
+
+// jwt secret
 app.set("superSecret", config.secret);
+
+// =============== helpers ============================================
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(morgan("dev"));
+// ====================================================================
 
-//CORS allow all
+// ===================== CORS =========================================
 app.all("*", function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
@@ -54,38 +57,49 @@ app.options("/*", function(req, res, next) {
   res.send(200);
 });
 
-var credentials = {
-  key: fs.readFileSync("./key.pem"),
-  cert: fs.readFileSync("./cert.pem")
-};
+// ====================================================================
+
+//*********************************************************************
+//                       UNPROTECTED ROUTES
+//*********************************************************************
 
 app.get("/", (req, res) => {
   res.send("api server");
 });
 
-// =========================== test db ===========================
+// =======================sign up route ===============================
 app.post("/signup/submit", (req, res) => {
-  db
-    .none("INSERT INTO users(username, pword, email) VALUES($1, $2, $3)", [
-      req.body.username,
-      req.body.password,
-      req.body.email
-    ])
-    .then(data => {
-      console.log("User saved successfully!");
-      res.json({
-        success: true,
-        message: "user submitted"
-      });
-    })
-    .catch(error => {
-      console.log("failed, error: " + error);
-      res.json({ success: false, err: error });
-    });
-});
-// ======================================================
+  console.log(req.body);
+  let username = req.body.username;
+  let email = req.body.email;
+  let saltRounds = 10;
 
-// route to authenticate & assign token
+  bcrypt.hash(req.body.password, saltRounds, (err, hashPass) => {
+    db
+      .none("INSERT INTO users(username, pword, email) VALUES($1, $2, $3)", [
+        username,
+        hashPass,
+        email
+      ])
+      .then(data => {
+        console.log("User saved successfully!");
+        res.json({
+          success: true,
+          message: "user submitted"
+        });
+      })
+      .then(res => {
+        res.redirect("http://localhost:3000/home");
+      })
+      .catch(error => {
+        console.log("failed, error: " + error);
+        res.json({ success: false, err: error });
+      });
+  });
+});
+// ====================================================================
+
+// ======================= login / token creation =====================
 app.post("/login/submit", (req, res) => {
   db
     .any("SELECT * FROM users WHERE username = $1 OR pword = $2", [
@@ -123,7 +137,13 @@ app.post("/login/submit", (req, res) => {
     });
 });
 
-//middleware route to verify token
+// ====================================================================
+
+// ********************************************************************
+//                      END UNPROTECTED ROUTES
+// ********************************************************************
+
+// ================== MIDDLEWARE verify token =========================
 
 app.use((req, res, next) => {
   console.log(req.headers.authorization);
@@ -144,14 +164,34 @@ app.use((req, res, next) => {
   }
 });
 
+// ====================================================================
+
+///////////////////////////////////////////////////////////////////////
+///////////////////   PROTECTED ROUTES   //////////////////////////////
+///////////////////     BELOW HERE       //////////////////////////////
+///////////////////////////////////////////////////////////////////////
+
 app.get("/auth", (req, res) => {
   res.send("it protected route!");
 });
 
+///////////////////////////////////////////////////////////////////////
+///////////////////   PROTECTED ROUTES   //////////////////////////////
+///////////////////      ABOVE HERE      //////////////////////////////
+///////////////////////////////////////////////////////////////////////
+
+// ==================== create / run server ===========================
+
 const port = process.env.PORT || 8000;
+const credentials = {
+  key: fs.readFileSync("./key.pem"),
+  cert: fs.readFileSync("./cert.pem")
+};
 
 const server = https.createServer(credentials, app).listen(port, () => {
   console.log("server running at " + port);
 });
+
+// ====================================================================
 
 module.exports = app;
