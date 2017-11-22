@@ -12,7 +12,7 @@ class HomePage extends React.Component {
   componentDidMount() {
     const config = { headers: { Authorization: localStorage.token } };
     axios
-      .get("http://localhost:8000/auth", {
+      .get("https://localhost:8000/auth", {
         headers: { Authorization: localStorage.token }
       })
       .then(res => {

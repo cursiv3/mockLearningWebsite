@@ -69,32 +69,47 @@ app.get("/", (req, res) => {
 
 // =======================sign up route ===============================
 app.post("/signup/submit", (req, res) => {
-  console.log(req.body);
   let username = req.body.username;
   let email = req.body.email;
   let saltRounds = 10;
 
   bcrypt.hash(req.body.password, saltRounds, (err, hashPass) => {
     db
-      .none("INSERT INTO users(username, pword, email) VALUES($1, $2, $3)", [
-        username,
-        hashPass,
-        email
-      ])
-      .then(data => {
-        console.log("User saved successfully!");
-        res.json({
-          success: true,
-          message: "user submitted"
-        });
-      })
-      .then(res => {
-        res.redirect("http://localhost:3000/home");
-      })
-      .catch(error => {
-        console.log("failed, error: " + error);
-        res.json({ success: false, err: error });
+      .many(
+        "SELECT username, email FROM users WHERE username = $1 OR email = $2",
+        [username, email]
+      )
+      .then(user => {
+        console.log(user);
       });
+
+    //if (user.exists) {
+    //  res.json({
+    //    success: false,
+    //    message: "Username already in use"
+    //  });
+    //}
+
+    //db
+    //  .none("INSERT INTO users(username, pword, email) VALUES($1, $2, $3)", [
+    //    username,
+    //    hashPass,
+    //    email
+    //  ])
+    //  .then(data => {
+    //    console.log("User saved successfully!");
+    //    res.json({
+    //      success: true,
+    //      message: "user submitted"
+    //    });
+    //  })
+    //  .then(res => {
+    //    res.redirect("http://localhost:3000/home");
+    //  })
+    //  .catch(error => {
+    //    console.log("failed, error: " + error);
+    //    res.json({ success: false, err: error });
+    //  });
   });
 });
 // ====================================================================

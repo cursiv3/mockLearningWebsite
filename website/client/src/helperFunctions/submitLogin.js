@@ -2,7 +2,7 @@ const axios = require("axios");
 
 export const submitLogin = (usr, pw) => {
   var params = { username: usr, password: pw };
-  console.log(params);
+
   axios
     .post("https://localhost:8000/login/submit", params)
     .then(res => {
