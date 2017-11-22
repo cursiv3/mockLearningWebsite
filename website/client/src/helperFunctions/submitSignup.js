@@ -2,7 +2,6 @@ const axios = require("axios");
 
 export const submitSignup = user => {
   var params = { username: user.usr, password: user.pw, email: user.email };
-  console.log(params);
   axios
     .post("https://localhost:8000/signup/submit", params)
     .then(res => {
@@ -11,9 +10,9 @@ export const submitSignup = user => {
         localStorage.isAuthenticated = true;
         window.location.reload();
       } else {
-        this.setState({
+        return {
           errors: { message: res.data.message }
-        });
+        };
       }
     })
     .catch(err => {

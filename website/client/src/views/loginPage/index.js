@@ -19,6 +19,7 @@ class LoginPage extends Component {
     };
 
     this.handleChange = this.handleChange.bind(this);
+    this.submitLogin = this.submitLogin.bind(this);
     this.validateForm = this.validateForm.bind(this);
   }
 
@@ -32,15 +33,37 @@ class LoginPage extends Component {
     });
   }
 
+  submitLogin(usr, pw) {
+    var params = { username: usr, password: pw };
+
+    axios
+      .post("https://localhost:8000/login/submit", params)
+      .then(res => {
+        if (res.data.success == true) {
+          localStorage.token = res.data.token;
+          localStorage.isAuthenticated = true;
+          window.location.reload();
+        } else {
+          this.setState({
+            errors: { message: res.data.message }
+          });
+        }
+      })
+      .catch(err => {
+        console.log("Data submit error: ", err);
+      });
+  }
+
   validateForm(event) {
     event.preventDefault();
+
     var payload = validateLoginForm(this.state.user);
     if (payload.success) {
       this.setState({
         errors: {}
       });
-      // Validate form, upon successful validation run the API call
-      submitLogin(this.state.user.username, this.state.user.password);
+
+      this.submitLogin(this.state.user.username, this.state.user.password);
     } else {
       const errors = payload.errors;
       this.setState({

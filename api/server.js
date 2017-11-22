@@ -76,40 +76,44 @@ app.post("/signup/submit", (req, res) => {
   bcrypt.hash(req.body.password, saltRounds, (err, hashPass) => {
     db
       .many(
-        "SELECT username, email FROM users WHERE username = $1 OR email = $2",
+        `SELECT CASE
+          WHEN $1 = username THEN 'username exists'
+          WHEN $2 = email THEN 'email exists'
+        END AS Users
+        FROM users`,
         [username, email]
+        // produces array: [ { anonymous { user: (string or null if empty) } ]
       )
-      .then(user => {
-        console.log(user);
+      .then(userList => {
+        if (userList[0].users == "username exists") {
+          res.json({ success: false, message: "Username already exists." });
+        } else if (userList[0].users == "email exists") {
+          res.json({
+            success: false,
+            message: "Email address already in use."
+          });
+        } else {
+          db
+            .none(
+              "INSERT INTO users(username, pword, email) VALUES($1, $2, $3)",
+              [username, hashPass, email]
+            )
+            .then(data => {
+              console.log("User saved successfully!");
+              res.json({
+                success: true,
+                message: "user submitted"
+              });
+            })
+            .catch(error => {
+              console.log("failed, error: " + error);
+              res.json({ success: false, err: error });
+            });
+        }
+      })
+      .catch(err => {
+        res.json({ success: false, message: "Server 500 error" });
       });
-
-    //if (user.exists) {
-    //  res.json({
-    //    success: false,
-    //    message: "Username already in use"
-    //  });
-    //}
-
-    //db
-    //  .none("INSERT INTO users(username, pword, email) VALUES($1, $2, $3)", [
-    //    username,
-    //    hashPass,
-    //    email
-    //  ])
-    //  .then(data => {
-    //    console.log("User saved successfully!");
-    //    res.json({
-    //      success: true,
-    //      message: "user submitted"
-    //    });
-    //  })
-    //  .then(res => {
-    //    res.redirect("http://localhost:3000/home");
-    //  })
-    //  .catch(error => {
-    //    console.log("failed, error: " + error);
-    //    res.json({ success: false, err: error });
-    //  });
   });
 });
 // ====================================================================
