@@ -14,7 +14,8 @@ const PrivateRoute = ({ component: Component, ...rest }) => (
         <Component {...props} />
       ) : (
         <Redirect to={"/login"} />
-      )}
+      )
+    }
   />
 );
 
@@ -26,15 +27,16 @@ const LoggedInRedirectRoute = ({ component: Component, ...rest }) => (
         <Redirect to={"/home"} />
       ) : (
         <Component {...props} />
-      )}
+      )
+    }
   />
 );
 
 const Routes = () => (
   <Switch>
     <LoggedInRedirectRoute exact path="/" component={SignUpPage} />
-    <LoggedInRedirectRoute path="/login" component={LoginPage} />
-    <PrivateRoute path="/home" component={HomePage} />
+    <LoggedInRedirectRoute exact path="/login" component={LoginPage} />
+    <PrivateRoute exact path="/home" component={HomePage} />
   </Switch>
 );
 

@@ -75,19 +75,21 @@ app.post("/signup/submit", (req, res) => {
 
   bcrypt.hash(req.body.password, saltRounds, (err, hashPass) => {
     db
-      .many(
-        `SELECT CASE
-          WHEN $1 = username THEN 'username exists'
-          WHEN $2 = email THEN 'email exists'
-        END AS Users
-        FROM users`,
-        [username, email]
-        // produces array: [ { anonymous { user: (string or null if empty) } ]
-      )
+      .task("check-dupes", async DB => {
+        return [
+          await DB.oneOrNone(`SELECT username FROM users WHERE username = $1`, [
+            username
+          ]),
+          await DB.oneOrNone(`SELECT email FROM users WHERE email = $1`, [
+            email
+          ])
+        ];
+      })
       .then(userList => {
-        if (userList[0].users == "username exists") {
+        console.log(userList);
+        if (userList[0] != null) {
           res.json({ success: false, message: "Username already exists." });
-        } else if (userList[0].users == "email exists") {
+        } else if (userList[1] != null) {
           res.json({
             success: false,
             message: "Email address already in use."
@@ -112,6 +114,7 @@ app.post("/signup/submit", (req, res) => {
         }
       })
       .catch(err => {
+        console.log(err);
         res.json({ success: false, message: "Server 500 error" });
       });
   });
@@ -121,33 +124,32 @@ app.post("/signup/submit", (req, res) => {
 // ======================= login / token creation =====================
 app.post("/login/submit", (req, res) => {
   db
-    .any("SELECT * FROM users WHERE username = $1 OR pword = $2", [
-      req.body.username,
-      req.body.password
-    ])
+    .any("SELECT * FROM users WHERE username = $1", [req.body.username])
     .then(user => {
       if (user.length < 1) {
-        console.log("fail");
         res.json({
           success: false,
           message: "User does not exist."
         });
       } else {
         var usr = user[0].username;
-        var pw = user[0].pword;
-        if (pw != req.body.password || usr != req.body.username) {
-          res.json({
-            success: false,
-            message: "Username or password incorrect."
-          });
-        } else {
-          const payload = { user: usr };
-          var token = jwt.sign(payload, app.get("superSecret"), {
-            expiresIn: 60 * 60 * 24
-          });
-          console.log("Successfully created token!");
-          res.json({ success: true, message: "Token created", token: token });
-        }
+        var hashPass = user[0].pword;
+
+        bcrypt.compare(req.body.password, hashPass, (err, doesPwMatch) => {
+          if (doesPwMatch != true || usr != req.body.username) {
+            res.json({
+              success: false,
+              message: "Username or password incorrect."
+            });
+          } else {
+            const payload = { user: usr };
+            var token = jwt.sign(payload, app.get("superSecret"), {
+              expiresIn: 60 * 60 * 24
+            });
+            console.log("Successfully created token!");
+            res.json({ success: true, message: "Token created", token: token });
+          }
+        });
       }
     })
     .catch(error => {

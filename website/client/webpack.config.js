@@ -15,7 +15,11 @@ module.exports = {
   entry: mainPath,
   output: {
     path: buildPath,
+    publicPath: "/",
     filename: "bundle.js"
+  },
+  devServer: {
+    historyApiFallback: true
   },
   module: {
     loaders: [
