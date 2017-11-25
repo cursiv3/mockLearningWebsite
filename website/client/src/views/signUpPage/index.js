@@ -3,6 +3,7 @@ import SignUpForm from "./component.js";
 const axios = require("axios");
 const FormValidators = require("../../helperFunctions/validate");
 const validateSignUpForm = FormValidators.validateSignUpForm;
+const zxcvbn = require("zxcvbn");
 
 class SignUpPage extends Component {
   constructor(props) {
@@ -15,12 +16,16 @@ class SignUpPage extends Component {
         email: "",
         password: "",
         pwconfirm: ""
-      }
+      },
+      btnTxt: "show",
+      type: "password",
+      score: ""
     };
 
     this.handleChange = this.handleChange.bind(this);
     this.submitSignup = this.submitSignup.bind(this);
     this.validateForm = this.validateForm.bind(this);
+    this.pwMask = this.pwMask.bind(this);
   }
 
   handleChange(event) {
@@ -31,6 +36,21 @@ class SignUpPage extends Component {
     this.setState({
       user
     });
+
+    if (event.target.value === "") {
+      this.setState(state =>
+        Object.assign({}, state, {
+          score: "null"
+        })
+      );
+    } else {
+      var pw = zxcvbn(event.target.value);
+      this.setState(state =>
+        Object.assign({}, state, {
+          score: pw.score
+        })
+      );
+    }
   }
 
   submitSignup(user) {
@@ -74,6 +94,16 @@ class SignUpPage extends Component {
     }
   }
 
+  pwMask(event) {
+    event.preventDefault();
+    this.setState(state =>
+      Object.assign({}, state, {
+        type: this.state.type == "password" ? "input" : "password",
+        btnTxt: this.state.btnTxt == "show" ? "hide" : "show"
+      })
+    );
+  }
+
   render() {
     return (
       <SignUpForm
@@ -81,6 +111,10 @@ class SignUpPage extends Component {
         onChange={this.handleChange}
         errors={this.state.errors}
         user={this.state.user}
+        score={this.state.score}
+        btnTxt={this.state.btnTxt}
+        type={this.state.type}
+        pwMask={this.pwMask}
       />
     );
   }

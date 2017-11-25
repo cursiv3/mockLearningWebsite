@@ -1,0 +1,44 @@
+$score-bad: red;
+$score-weak: orange;
+$score-average: yellow;
+$score-good: #5cff47;
+$score-strong: green;
+
+.signUpSubmit {
+  margin: 15px 0 0 0;
+}
+
+.pwStrength {
+  position: relative;
+  width: 0%;
+  height: 5px;
+  left: 0;
+  background: transparent;
+  transition: all 300ms ease-in-out;
+
+  &[data-pwscore="null"] {
+    width: 0%;
+    background: red;
+  }
+
+  &[data-pwscore="0"] {
+    width: 10%;
+    background: $score-bad;
+  }
+  &[data-pwscore="1"] {
+    width: 25%;
+    background: $score-weak;
+  }
+  &[data-pwscore="2"] {
+    width: 50%;
+    background: $score-average;
+  }
+  &[data-pwscore="3"] {
+    width: 75%;
+    background: $score-good;
+  }
+  &[data-pwscore="4"] {
+    width: 100%;
+    background: $score-strong;
+  }
+}

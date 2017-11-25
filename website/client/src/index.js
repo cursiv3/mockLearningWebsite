@@ -3,7 +3,7 @@ import { render } from "react-dom";
 import registerServiceWorker from "./registerServiceWorker";
 import { BrowserRouter } from "react-router-dom";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
-import "./index.css";
+import "./index.scss";
 import Routes from "./routes";
 
 const rootEl = document.getElementById("root");

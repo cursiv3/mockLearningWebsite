@@ -3,6 +3,7 @@ const path = require("path");
 const buildPath = path.resolve(__dirname, "build");
 const mainPath = path.resolve(__dirname, "src", "index.js");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 var HTMLWebpackPluginConfig = new HTMLWebpackPlugin({
   template: __dirname + "/src/public/index.html",
@@ -33,7 +34,21 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: [{ loader: "style-loader" }, { loader: "css-loader" }]
+        use: [
+          {
+            loader: "style-loader"
+          },
+          {
+            loader: "css-loader"
+          }
+        ]
+      },
+      {
+        test: /\.scss$/,
+        exclude: /node_modules/,
+        use: ExtractTextPlugin.extract({
+          use: ["css-loader", "sass-loader"]
+        })
       }
     ]
   },
@@ -41,6 +56,11 @@ module.exports = {
     HTMLWebpackPluginConfig,
     new webpack.DefinePlugin({
       "process.env.NODE_ENV": JSON.stringify("development")
+    }),
+    new ExtractTextPlugin({
+      disable: false,
+      filename: "common.css",
+      allChunks: true
     })
   ]
 };

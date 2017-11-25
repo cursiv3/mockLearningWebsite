@@ -1,14 +1,24 @@
 import React from "react";
 import FlatButton from "material-ui/FlatButton";
+import RaisedButton from "material-ui/RaisedButton";
 import TextField from "material-ui/TextField";
 import { Link } from "react-router-dom";
-import "./style.css";
+import "./style.scss";
 
-const SignUpForm = ({ history, onSubmit, onChange, errors, user }) => {
+const SignUpForm = ({
+  history,
+  onSubmit,
+  onChange,
+  errors,
+  user,
+  score,
+  btnTxt,
+  type,
+  pwMask
+}) => {
   return (
     <div className="loginBox">
       <h1>Sign Up</h1>
-
       {errors.message && <p style={{ color: "red" }}>{errors.message}</p>}
 
       <form onSubmit={onSubmit}>
@@ -27,20 +37,24 @@ const SignUpForm = ({ history, onSubmit, onChange, errors, user }) => {
           errorText={errors.email}
         />
         <TextField
+          type={type}
           name="password"
           floatingLabelText="password"
           value={user.password}
           onChange={onChange}
           errorText={errors.password}
         />
+        <div className="pwStrength" data-pwscore={score} />
         <TextField
+          type={type}
           name="pwconfirm"
           floatingLabelText="confirm password"
           value={user.pwconfirm}
           onChange={onChange}
           errorText={errors.pwconfirm}
         />
-        <FlatButton type="submit" label="submit" />
+        <FlatButton label={btnTxt} onClick={pwMask} />
+        <RaisedButton type="submit" label="submit" />
       </form>
       <p>
         Aleady have an account? <br />

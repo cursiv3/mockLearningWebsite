@@ -4,7 +4,6 @@ const axios = require("axios");
 const FormValidators = require("../../helperFunctions/validate");
 const validateLoginForm = FormValidators.validateLoginForm;
 const authCheck = require("../../helperFunctions/authCheck");
-import { submitLogin } from "../../helperFunctions/submitLogin";
 
 class LoginPage extends Component {
   constructor(props) {
@@ -15,12 +14,15 @@ class LoginPage extends Component {
       user: {
         username: "",
         password: ""
-      }
+      },
+      btnTxt: "show",
+      type: "password"
     };
 
     this.handleChange = this.handleChange.bind(this);
     this.submitLogin = this.submitLogin.bind(this);
     this.validateForm = this.validateForm.bind(this);
+    this.pwMask = this.pwMask.bind(this);
   }
 
   handleChange(event) {
@@ -72,6 +74,16 @@ class LoginPage extends Component {
     }
   }
 
+  pwMask(event) {
+    event.preventDefault();
+    this.setState(state =>
+      Object.assign({}, state, {
+        type: this.state.type == "password" ? "input" : "password",
+        btnTxt: this.state.btnTxt == "show" ? "hide" : "show"
+      })
+    );
+  }
+
   render() {
     return (
       <LoginForm
@@ -79,6 +91,9 @@ class LoginPage extends Component {
         onChange={this.handleChange}
         errors={this.state.errors}
         user={this.state.user}
+        btnTxt={this.state.btnTxt}
+        type={this.state.type}
+        pwMask={this.pwMask}
       />
     );
   }
