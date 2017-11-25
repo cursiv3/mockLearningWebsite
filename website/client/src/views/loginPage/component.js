@@ -41,6 +41,7 @@ const LoginForm = ({
             onChange={onChange}
             errorText={errors.password}
           />
+          <br />
           <FlatButton
             label={btnTxt}
             onClick={pwMask}
