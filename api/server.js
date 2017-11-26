@@ -9,8 +9,10 @@ const bcrypt = require("bcrypt");
 const http = require("http");
 const https = require("https");
 const fs = require("fs");
+const url = require("url");
 const jwt = require("jsonwebtoken");
 const config = require("./config");
+const nodemailer = require("nodemailer");
 
 // ============== postgres DB items ===================================
 const options = {
@@ -95,22 +97,54 @@ app.post("/signup/submit", (req, res) => {
             message: "Email address already in use."
           });
         } else {
-          db
-            .none(
-              "INSERT INTO users(username, pword, email) VALUES($1, $2, $3)",
-              [username, hashPass, email]
-            )
-            .then(data => {
-              console.log("User saved successfully!");
-              res.json({
-                success: true,
-                message: "user submitted"
-              });
-            })
-            .catch(error => {
-              console.log("failed, error: " + error);
-              res.json({ success: false, err: error });
-            });
+          // need to store data in temp user table with hashed PW
+          // to preserve PW somewhere safe while waiting for email verify
+          // db
+          // .none(
+          //   "INSERT INTO tempusers(username, pword, email) VALUES($1, $2, $3)",
+          //   [username, hashPass, email]
+          // )
+          // .then(data => {
+          //   console.log("User saved successfully!");
+          //   res.json({
+          //     success: true,
+          //     message: "user submitted"
+          //   });
+          // })
+          // .catch(error => {
+          //   console.log("failed, error: " + error);
+          //   res.json({ success: false, err: error });
+          // });
+
+          const payload = { user: "corey" };
+          var token = jwt.sign(payload, app.get("superSecret"), {
+            expiresIn: 86400
+          });
+
+          let transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+              user: "coreylewispdx@gmail.com",
+              pass: "dcih539gear"
+            }
+          });
+
+          let mailOptions = {
+            from: "Corey's Social Media Team",
+            to: "lewisc503@gmail.com",
+            subject: "CSM Authentication Email",
+            html:
+              "<h1>Complete your sign up!</h1><a href='https://localhost:8000/verify/email?token=" +
+              token +
+              "?id=" +
+              username +
+              "'>Click this link to verify your email address!</a>"
+          };
+          transporter.sendMail(mailOptions, (err, info) => {
+            if (err) {
+              return console.log(err);
+            }
+          });
         }
       })
       .catch(err => {
@@ -120,6 +154,23 @@ app.post("/signup/submit", (req, res) => {
   });
 });
 // ====================================================================
+
+app.get("/verify/email", (req, res) => {
+  const token =
+    req.body.token || req.query.token || req.headers["authorization"];
+
+  if (token) {
+    jwt.verify(token, app.get("superSecret"), (err, decoded) => {
+      if (err) {
+        return res.json({ success: false, message: "Authentication failed." });
+      } else {
+        res.json({ success: true });
+      }
+    });
+  } else {
+    return res.json({ success: false, message: "No authentication provided." });
+  }
+});
 
 // ======================= login / token creation =====================
 app.post("/login/submit", (req, res) => {
