@@ -1,4 +1,4 @@
-import * as data from "./sensitiveInfo";
+const data = require("./sensitiveInfo");
 
 module.exports = {
   auth: {
