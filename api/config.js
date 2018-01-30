@@ -1,4 +1,12 @@
+import * as data from "./sensitiveInfo";
+
 module.exports = {
-  secret: "snoopaloop123",
-  database: "postgresql://dbadmin:cpa123@localhost:5432/smockusers"
+  auth: {
+    secret: data.secret
+  },
+  db: {
+    databaseHost: `postgresql://${data.dbAdmin}:${
+      data.dbPass
+    }@localhost:5432/smockusers`
+  }
 };

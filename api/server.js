@@ -17,12 +17,12 @@ const options = {
   promiseLib: promise
 };
 const pgp = require("pg-promise")(options);
-const db = pgp(config.database);
+const db = pgp(config.db.databaseHost);
 
 // ====================================================================
 
 // jwt secret
-app.set("superSecret", config.secret);
+app.set("superSecret", config.auth.secret);
 
 // =============== helpers ============================================
 app.use(bodyParser.urlencoded({ extended: false }));
