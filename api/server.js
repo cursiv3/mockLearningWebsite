@@ -33,7 +33,7 @@ app.use(morgan("dev"));
 // ====================================================================
 
 // ===================== CORS =========================================
-app.all("*", function(req, res, next) {
+app.all("*", function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
   res.header(
@@ -41,15 +41,13 @@ app.all("*", function(req, res, next) {
     "Content-Type, Authorization, Content-Length, X-Requested-With"
   );
   if ("OPTIONS" === req.method) {
-    //respond with 200
     res.sendStatus(200);
   } else {
-    //move on
     next();
   }
 });
 
-app.options("/*", function(req, res, next) {
+app.options("/*", function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
   res.header(
@@ -66,7 +64,7 @@ app.options("/*", function(req, res, next) {
 //*********************************************************************
 
 app.get("/", (req, res) => {
-  res.send("api server");
+  res.send("Corey's api server");
 });
 
 // =======================sign up route ===============================
@@ -88,7 +86,6 @@ app.post("/signup/submit", (req, res) => {
         ];
       })
       .then(userList => {
-        console.log(userList);
         if (userList[0] != null) {
           res.json({ success: false, message: "Username already exists." });
         } else if (userList[1] != null) {
@@ -124,8 +121,8 @@ app.post("/signup/submit", (req, res) => {
           let transporter = nodemailer.createTransport({
             service: "gmail",
             auth: {
-              user: "coreylewispdx@gmail.com",
-              pass: "dcih539gear"
+              user: config.mailerEmail,
+              pass: config.mailerPW
             }
           });
 
@@ -134,11 +131,10 @@ app.post("/signup/submit", (req, res) => {
             to: "lewisc503@gmail.com",
             subject: "CSM Authentication Email",
             html:
-              "<h1>Complete your sign up!</h1><a href='https://localhost:8000/verify/email?token=" +
-              token +
-              "?id=" +
-              username +
-              "'>Click this link to verify your email address!</a>"
+              `<h1>Complete your sign up!</h1>
+                <a href="https://localhost:8000/verify/email?token=${token}?id=${username}"> 
+                  Click this link to verify your email address!
+                </a>`
           };
           transporter.sendMail(mailOptions, (err, info) => {
             if (err) {

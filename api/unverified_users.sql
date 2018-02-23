@@ -1,0 +1,6 @@
+CREATE TABLE unverified_users
+(
+    ID INT PRIMARY KEY NOT NULL,
+    USERNAME CHAR(100),
+    EMAIL CHAR(100)
+);
