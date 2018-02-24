@@ -1,5 +1,4 @@
 "use strict";
-
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
@@ -13,6 +12,9 @@ const url = require("url");
 const jwt = require("jsonwebtoken");
 const config = require("./config");
 const nodemailer = require("nodemailer");
+const uuidv4 = require('uuid/v4');
+const mailerOptionsSetup = require('./nodeMailer/nodeMailer');
+
 
 // ============== postgres DB items ===================================
 const options = {
@@ -71,49 +73,48 @@ app.get("/", (req, res) => {
 app.post("/signup/submit", (req, res) => {
   let username = req.body.username;
   let email = req.body.email;
-  let saltRounds = 10;
+  let password = req.body.password;
 
-  bcrypt.hash(req.body.password, saltRounds, (err, hashPass) => {
-    db
-      .task("check-dupes", async DB => {
-        return [
-          await DB.oneOrNone(`SELECT username FROM users WHERE username = $1`, [
-            username
-          ]),
-          await DB.oneOrNone(`SELECT email FROM users WHERE email = $1`, [
-            email
-          ])
-        ];
-      })
-      .then(userList => {
-        if (userList[0] != null) {
-          res.json({ success: false, message: "Username already exists." });
-        } else if (userList[1] != null) {
-          res.json({
-            success: false,
-            message: "Email address already in use."
-          });
-        } else {
-          // need to store data in temp user table with hashed PW
-          // to preserve PW somewhere safe while waiting for email verify
-          // db
-          // .none(
-          //   "INSERT INTO tempusers(username, pword, email) VALUES($1, $2, $3)",
-          //   [username, hashPass, email]
-          // )
-          // .then(data => {
-          //   console.log("User saved successfully!");
-          //   res.json({
-          //     success: true,
-          //     message: "user submitted"
-          //   });
-          // })
-          // .catch(error => {
-          //   console.log("failed, error: " + error);
-          //   res.json({ success: false, err: error });
-          // });
+  db
+    .task("check-dupes", async DB => {
 
-          const payload = { user: "corey" };
+      return [
+        await DB.oneOrNone(`SELECT username FROM users WHERE username = $1`, [
+          username
+        ]),
+        await DB.oneOrNone(`SELECT email FROM users WHERE email = $1`, [
+          email
+        ])
+      ];
+    })
+    .then(userList => {
+      if (userList[0] != null) {
+        res.json({ success: false, message: "Username already exists." });
+      } else if (userList[1] != null) {
+        res.json({
+          success: false,
+          message: "Email address already in use."
+        });
+      } else {
+        let saltRounds = 10;
+        bcrypt.hash(req.body.password, saltRounds, (err, hashPass) => {
+
+          db
+            .none(
+              "INSERT INTO unverified_users(username, password, email) VALUES($1, $2, $3)",
+              [username, hashPass, email]
+            )
+            .then(data => {
+              res.json({
+                success: true,
+                message: "user submitted"
+              });
+            })
+            .catch(error => {
+              console.log("failed, error: " + error);
+              res.json({ success: false, err: error });
+            });
+
           var token = jwt.sign(payload, app.get("superSecret"), {
             expiresIn: 86400
           });
@@ -126,28 +127,22 @@ app.post("/signup/submit", (req, res) => {
             }
           });
 
-          let mailOptions = {
-            from: "Corey's Social Media Team",
-            to: "lewisc503@gmail.com",
-            subject: "CSM Authentication Email",
-            html:
-              `<h1>Complete your sign up!</h1>
-                <a href="https://localhost:8000/verify/email?token=${token}?id=${username}"> 
-                  Click this link to verify your email address!
-                </a>`
-          };
+
+          let mailOptions = mailerOptionsSetup(token, username);
+
           transporter.sendMail(mailOptions, (err, info) => {
             if (err) {
               return console.log(err);
             }
           });
-        }
-      })
-      .catch(err => {
-        console.log(err);
-        res.json({ success: false, message: "Server 500 error" });
-      });
-  });
+
+        })
+      }
+    })
+    .catch(err => {
+      console.log(err);
+      res.json({ success: false, message: "Server 500 error" });
+    });
 });
 // ====================================================================
 
@@ -214,7 +209,6 @@ app.post("/login/submit", (req, res) => {
 // ================== MIDDLEWARE verify token =========================
 
 app.use((req, res, next) => {
-  console.log(req.headers.authorization);
   const token =
     req.body.token || req.query.token || req.headers["authorization"];
 
