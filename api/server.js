@@ -13,7 +13,7 @@ const jwt = require("jsonwebtoken");
 const config = require("./config");
 const nodemailer = require("nodemailer");
 const uuidv4 = require('uuid/v4');
-const mailerOptionsSetup = require('./nodeMailer/nodeMailer');
+const mailerOptionsSetup = require('./nodeMailer/mailerOptionsSetup');
 
 
 // ============== postgres DB items ===================================
@@ -71,9 +71,10 @@ app.get("/", (req, res) => {
 
 // =======================sign up route ===============================
 app.post("/signup/submit", (req, res) => {
-  let username = req.body.username;
-  let email = req.body.email;
-  let password = req.body.password;
+  let username = req.body.username,
+    email = req.body.email,
+    password = req.body.password,
+    userId;
 
   db
     .task("check-dupes", async DB => {
@@ -99,43 +100,56 @@ app.post("/signup/submit", (req, res) => {
         let saltRounds = 10;
         bcrypt.hash(req.body.password, saltRounds, (err, hashPass) => {
 
-          db
-            .none(
-              "INSERT INTO unverified_users(username, password, email) VALUES($1, $2, $3)",
-              [username, hashPass, email]
-            )
+          // db
+          //   .none(
+          //     "INSERT INTO unverified_users(username, password, email) VALUES($1, $2, $3)",
+          //     [username, hashPass, email]
+          //   )
+          // db
+          //   .task("insert new signup and get new id", async DB => {
+          //
+          //     return [
+          //       await db.none(`INSERT INTO unverified_users(username, password, email, email_verified) VALUES($1, $2, $3, $4)`,
+          //         [username, hashPass, email, false]
+          //       )
+          //       // await DB.oneOrNone(`SELECT id FROM users WHERE email = $1`, [
+          //       //   email
+          //       // ])
+          //     ];
+          //   });
+          db.none(`INSERT INTO users(username, pword, email, email_verified) VALUES($1, $2, $3, $4)`,
+            [username, hashPass, email, false]
+          )
+            // db.oneOrNone(`SELECT id FROM unverified_users WHERE email = $1`, [
+            //   email
+            // ])
             .then(data => {
-              res.json({
-                success: true,
-                message: "user submitted"
+              var payload = { user: username }
+              var token = jwt.sign(payload, app.get("superSecret"), {
+                expiresIn: 86400
               });
+              let transporter = nodemailer.createTransport({
+                service: "gmail",
+                auth: {
+                  user: config.mailerEmail,
+                  pass: config.mailerPW
+                }
+              });
+
+
+              let mailOptions = mailerOptionsSetup(token, email);
+
+              transporter.sendMail(mailOptions, (err, info) => {
+                if (err) {
+                  return console.log(err);
+                }
+              });
+
             })
             .catch(error => {
               console.log("failed, error: " + error);
               res.json({ success: false, err: error });
             });
-
-          var token = jwt.sign(payload, app.get("superSecret"), {
-            expiresIn: 86400
-          });
-
-          let transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-              user: config.mailerEmail,
-              pass: config.mailerPW
-            }
-          });
-
-
-          let mailOptions = mailerOptionsSetup(token, username);
-
-          transporter.sendMail(mailOptions, (err, info) => {
-            if (err) {
-              return console.log(err);
-            }
-          });
-
         })
       }
     })
@@ -147,15 +161,20 @@ app.post("/signup/submit", (req, res) => {
 // ====================================================================
 
 app.get("/verify/email", (req, res) => {
-  const token =
-    req.body.token || req.query.token || req.headers["authorization"];
+  const allParams = req.query.token;
+  const token = `${allParams.match(/.+?(?=\?)/)}`;
+  const userEmail = `${allParams.match(/[^=]+$/)}`
 
   if (token) {
     jwt.verify(token, app.get("superSecret"), (err, decoded) => {
       if (err) {
-        return res.json({ success: false, message: "Authentication failed." });
+        return res.json({ success: false, message: "Authentication failed.", error: err.message });
       } else {
-        res.json({ success: true });
+        db.none(`
+            UPDATE users 
+            SET email_verified = true
+            WHERE email = ${userEmail};
+          `)
       }
     });
   } else {

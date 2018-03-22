@@ -8,10 +8,4 @@ CREATE TABLE users
     pword VARCHAR,
     email VARCHAR
 );
-CREATE TABLE tempusers
-(
-    ID SERIAL PRIMARY KEY,
-    username VARCHAR,
-    pword VARCHAR,
-    email VARCHAR
-);
+
