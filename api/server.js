@@ -12,9 +12,8 @@ const url = require("url");
 const jwt = require("jsonwebtoken");
 const config = require("./config");
 const nodemailer = require("nodemailer");
-const uuidv4 = require('uuid/v4');
-const mailerOptionsSetup = require('./nodeMailer/mailerOptionsSetup');
-
+const uuidv4 = require("uuid/v4");
+const mailerOptionsSetup = require("./nodeMailer/mailerOptionsSetup");
 
 // ============== postgres DB items ===================================
 const options = {
@@ -35,7 +34,7 @@ app.use(morgan("dev"));
 // ====================================================================
 
 // ===================== CORS =========================================
-app.all("*", function (req, res, next) {
+app.all("*", function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
   res.header(
@@ -49,8 +48,8 @@ app.all("*", function (req, res, next) {
   }
 });
 
-app.options("/*", function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
+app.options("/*", function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:8080");
   res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
   res.header(
     "Access-Control-Allow-Headers",
@@ -76,18 +75,14 @@ app.post("/signup/submit", (req, res) => {
     password = req.body.password,
     userId;
 
-  db
-    .task("check-dupes", async DB => {
-
-      return [
-        await DB.oneOrNone(`SELECT username FROM users WHERE username = $1`, [
-          username
-        ]),
-        await DB.oneOrNone(`SELECT email FROM users WHERE email = $1`, [
-          email
-        ])
-      ];
-    })
+  db.task("check-dupes", async DB => {
+    return [
+      await DB.oneOrNone(`SELECT username FROM users WHERE username = $1`, [
+        username
+      ]),
+      await DB.oneOrNone(`SELECT email FROM users WHERE email = $1`, [email])
+    ];
+  })
     .then(userList => {
       if (userList[0] != null) {
         res.json({ success: false, message: "Username already exists." });
@@ -99,7 +94,6 @@ app.post("/signup/submit", (req, res) => {
       } else {
         let saltRounds = 10;
         bcrypt.hash(req.body.password, saltRounds, (err, hashPass) => {
-
           // db
           //   .none(
           //     "INSERT INTO unverified_users(username, password, email) VALUES($1, $2, $3)",
@@ -117,14 +111,15 @@ app.post("/signup/submit", (req, res) => {
           //       // ])
           //     ];
           //   });
-          db.none(`INSERT INTO users(username, pword, email, email_verified) VALUES($1, $2, $3, $4)`,
+          db.none(
+            `INSERT INTO users(username, pword, email, email_verified) VALUES($1, $2, $3, $4)`,
             [username, hashPass, email, false]
           )
             // db.oneOrNone(`SELECT id FROM unverified_users WHERE email = $1`, [
             //   email
             // ])
             .then(data => {
-              var payload = { user: username }
+              var payload = { user: username };
               var token = jwt.sign(payload, app.get("superSecret"), {
                 expiresIn: 86400
               });
@@ -136,7 +131,6 @@ app.post("/signup/submit", (req, res) => {
                 }
               });
 
-
               let mailOptions = mailerOptionsSetup(token, email);
 
               transporter.sendMail(mailOptions, (err, info) => {
@@ -144,13 +138,12 @@ app.post("/signup/submit", (req, res) => {
                   return console.log(err);
                 }
               });
-
             })
             .catch(error => {
               console.log("failed, error: " + error);
               res.json({ success: false, err: error });
             });
-        })
+        });
       }
     })
     .catch(err => {
@@ -163,18 +156,22 @@ app.post("/signup/submit", (req, res) => {
 app.get("/verify/email", (req, res) => {
   const allParams = req.query.token;
   const token = `${allParams.match(/.+?(?=\?)/)}`;
-  const userEmail = `${allParams.match(/[^=]+$/)}`
+  const userEmail = `${allParams.match(/[^=]+$/)}`;
 
   if (token) {
     jwt.verify(token, app.get("superSecret"), (err, decoded) => {
       if (err) {
-        return res.json({ success: false, message: "Authentication failed.", error: err.message });
+        return res.json({
+          success: false,
+          message: "Authentication failed.",
+          error: err.message
+        });
       } else {
         db.none(`
             UPDATE users 
             SET email_verified = true
-            WHERE email = ${userEmail};
-          `)
+            WHERE email = '${userEmail}';
+          `);
       }
     });
   } else {
@@ -184,8 +181,7 @@ app.get("/verify/email", (req, res) => {
 
 // ======================= login / token creation =====================
 app.post("/login/submit", (req, res) => {
-  db
-    .any("SELECT * FROM users WHERE username = $1", [req.body.username])
+  db.any("SELECT * FROM users WHERE username = $1", [req.body.username])
     .then(user => {
       if (user.length < 1) {
         res.json({
