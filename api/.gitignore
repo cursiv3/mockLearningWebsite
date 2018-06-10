@@ -13,6 +13,10 @@
 /sensitiveInfo.js
 
 
+#sensitive
+config.js
+
+
 # misc
 .DS_Store
 .env.local

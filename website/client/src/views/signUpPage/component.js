@@ -14,7 +14,8 @@ const SignUpForm = ({
   score,
   btnTxt,
   type,
-  pwMask
+  pwMask,
+  onPwChange
 }) => {
   return (
     <div className="loginBox">
@@ -41,7 +42,7 @@ const SignUpForm = ({
           name="password"
           floatingLabelText="password"
           value={user.password}
-          onChange={onChange}
+          onChange={onPwChange}
           errorText={errors.password}
         />
         <div className="pwStrength" data-pwscore={score} />
