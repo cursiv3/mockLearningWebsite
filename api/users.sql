@@ -8,7 +8,4 @@ CREATE TABLE users
     pword VARCHAR,
     email VARCHAR
 );
-INSERT INTO users
-    (username, pword, email)
-VALUES
-    ('csl503', 'crypto123', 'csl503@email.com');
+

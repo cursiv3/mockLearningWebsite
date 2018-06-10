@@ -26,9 +26,20 @@ class SignUpPage extends Component {
     this.submitSignup = this.submitSignup.bind(this);
     this.validateForm = this.validateForm.bind(this);
     this.pwMask = this.pwMask.bind(this);
+    this.pwHandleChange = this.pwHandleChange.bind(this);
   }
 
   handleChange(event) {
+    const field = event.target.name;
+    const user = this.state.user;
+    user[field] = event.target.value;
+
+    this.setState({
+      user
+    });
+  }
+
+  pwHandleChange(event) {
     const field = event.target.name;
     const user = this.state.user;
     user[field] = event.target.value;
@@ -109,6 +120,7 @@ class SignUpPage extends Component {
       <SignUpForm
         onSubmit={this.validateForm}
         onChange={this.handleChange}
+        onPwChange={this.pwHandleChange}
         errors={this.state.errors}
         user={this.state.user}
         score={this.state.score}

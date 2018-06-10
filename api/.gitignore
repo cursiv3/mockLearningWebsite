@@ -9,8 +9,9 @@
 # production
 /build
 
-# sensitive information
-/sensitiveInfo.js
+#sensitive
+config.js
+
 
 # misc
 .DS_Store
