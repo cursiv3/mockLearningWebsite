@@ -126,6 +126,17 @@ app.post("/signup/submit", (req, res) => {
                 token: token
               });
             })
+            .then(
+              db
+                .one(`SELECT id FROM users WHERE username = $1`, [username])
+                .then(usrId => {
+                  console.log(usrId, "********************");
+                  db.none(
+                    `INSERT INTO user_data(id, username, email) VALUES ($1, $2, $3)`,
+                    [usrId.id, username, email]
+                  );
+                })
+            )
             .catch(error => {
               console.log("failed, error: " + error);
               res.json({ success: false, err: error });
@@ -172,12 +183,22 @@ app.get("/verify/email", (req, res) => {
 
 // ======================= login / token creation =====================
 app.post("/login/submit", (req, res) => {
-  db.any(`SELECT * FROM users WHERE username = $1`, [req.body.username])
+  db.task("check login, get user data", async DB => {
+    return [
+      await DB.oneOrNone(`SELECT * FROM users WHERE username = $1`, [
+        req.body.username
+      ]),
+      await DB.oneOrNone(`SELECT * FROM user_data WHERE username = $1`, [
+        req.body.username
+      ])
+    ];
+  })
     .then(user => {
-      if (user.length < 1) {
+      console.log("****************", user);
+      if (user[0] === null) {
         res.json({
           success: false,
-          message: "User does not exist."
+          message: "Username does not exist."
         });
       } else {
         var usr = user[0].username;
@@ -195,14 +216,19 @@ app.post("/login/submit", (req, res) => {
               expiresIn: 60 * 60 * 24
             });
             console.log("Successfully created token!");
-            res.json({ success: true, message: "Token created", token: token });
+            res.json({
+              success: true,
+              message: "Token created",
+              token: token,
+              data: user[1]
+            });
           }
         });
       }
     })
     .catch(error => {
       console.log("CATCH ERROR: " + error);
-      res.json({ success: false, err: error });
+      res.json({ success: false, message: error.message, err: error });
     });
 });
 
@@ -224,7 +250,11 @@ app.use((req, res, next) => {
         return res.json({ success: false, message: "Authentication failed." });
       } else {
         req.decoded = decoded;
-        res.json({ success: true });
+        db.one(`SELECT * FROM user_data WHERE username = $1`, [
+          decoded.user
+        ]).then(userData => {
+          res.json({ success: true, data: userData });
+        });
       }
     });
   } else {
