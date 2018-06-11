@@ -10,7 +10,7 @@ const PrivateRoute = ({ component: Component, ...rest }) => (
   <Route
     {...rest}
     render={props =>
-      localStorage.isAuthenticated == "true" ? (
+      localStorage.isAuthenticated === "true" ? (
         <Component {...props} />
       ) : (
         <Redirect to={"/login"} />
@@ -23,7 +23,7 @@ const LoggedInRedirectRoute = ({ component: Component, ...rest }) => (
   <Route
     {...rest}
     render={props =>
-      localStorage.isAuthenticated == "true" ? (
+      localStorage.isAuthenticated === "true" ? (
         <Redirect to={"/home"} />
       ) : (
         <Component {...props} />

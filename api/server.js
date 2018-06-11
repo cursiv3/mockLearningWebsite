@@ -14,6 +14,7 @@ const config = require("./config");
 const nodemailer = require("nodemailer");
 const uuidv4 = require("uuid/v4");
 const mailerOptionsSetup = require("./nodeMailer/mailerOptionsSetup");
+const helmet = require("helmet");
 
 // ============== postgres DB items ===================================
 const options = {
@@ -28,6 +29,7 @@ const db = pgp(config.database);
 app.set("superSecret", config.secret);
 
 // =============== helpers ============================================
+app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(morgan("dev"));
@@ -94,30 +96,10 @@ app.post("/signup/submit", (req, res) => {
       } else {
         let saltRounds = 10;
         bcrypt.hash(req.body.password, saltRounds, (err, hashPass) => {
-          // db
-          //   .none(
-          //     "INSERT INTO unverified_users(username, password, email) VALUES($1, $2, $3)",
-          //     [username, hashPass, email]
-          //   )
-          // db
-          //   .task("insert new signup and get new id", async DB => {
-          //
-          //     return [
-          //       await db.none(`INSERT INTO unverified_users(username, password, email, email_verified) VALUES($1, $2, $3, $4)`,
-          //         [username, hashPass, email, false]
-          //       )
-          //       // await DB.oneOrNone(`SELECT id FROM users WHERE email = $1`, [
-          //       //   email
-          //       // ])
-          //     ];
-          //   });
           db.none(
             `INSERT INTO users(username, pword, email, email_verified) VALUES($1, $2, $3, $4)`,
             [username, hashPass, email, false]
           )
-            // db.oneOrNone(`SELECT id FROM unverified_users WHERE email = $1`, [
-            //   email
-            // ])
             .then(data => {
               var payload = { user: username };
               var token = jwt.sign(payload, app.get("superSecret"), {
@@ -137,6 +119,11 @@ app.post("/signup/submit", (req, res) => {
                 if (err) {
                   return console.log(err);
                 }
+              });
+              res.json({
+                success: true,
+                message: "Token created",
+                token: token
               });
             })
             .catch(error => {
@@ -167,11 +154,15 @@ app.get("/verify/email", (req, res) => {
           error: err.message
         });
       } else {
-        db.none(`
+        db.none(
+          `
             UPDATE users 
             SET email_verified = true
-            WHERE email = '${userEmail}';
-          `);
+            WHERE email = $1
+          `,
+          [userEmail]
+        );
+        res.redirect("http://localhost:8080/login");
       }
     });
   } else {
@@ -181,7 +172,7 @@ app.get("/verify/email", (req, res) => {
 
 // ======================= login / token creation =====================
 app.post("/login/submit", (req, res) => {
-  db.any("SELECT * FROM users WHERE username = $1", [req.body.username])
+  db.any(`SELECT * FROM users WHERE username = $1`, [req.body.username])
     .then(user => {
       if (user.length < 1) {
         res.json({
