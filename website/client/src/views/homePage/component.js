@@ -6,7 +6,8 @@ class HomePage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      auth: false
+      auth: false,
+      user: ""
     };
   }
   componentDidMount() {
@@ -17,17 +18,22 @@ class HomePage extends React.Component {
       })
       .then(res => {
         if (res.data.success) {
-          this.setState({ auth: true });
+          this.setState({ auth: true, user: res.data.data });
         }
       });
   }
 
   render() {
+    console.log(this.state.user);
     return (
       <div>
         <Signout />
         <p>this is the protected home page!</p>
-        {this.state.auth && <h1>auth content here</h1>}
+        {this.state.auth && (
+          <div>
+            <h1>Profile</h1>
+          </div>
+        )}
       </div>
     );
   }
